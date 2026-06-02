@@ -15,31 +15,7 @@
       },
       {
         "group": "Work",
-        "pages": [
-          {
-            "group": "Permission metrix",
-            "pages": [
-              "permission-metrix/perm-00-permission-master-registry",
-              "permission-metrix/perm-01-permission-architecture-overview",
-              "permission-metrix/perm-02-actor-registry",
-              "permission-metrix/perm-03-action-taxonomy",
-              "permission-metrix/perm-04-object-authority-matrix",
-              "permission-metrix/perm-05-permit-evaluation-model",
-              "permission-metrix/perm-06-customer-permission-matrix",
-              "permission-metrix/perm-07-workforce-permission-matrix",
-              "permission-metrix/perm-08-partner-permission-matrix",
-              "permission-metrix/perm-09-system-actor-permission-matrix",
-              "permission-metrix/perm-10-ops-f88-case-work-item-permission-matrix",
-              "permission-metrix/perm-11-high-risk-action-matrix",
-              "permission-metrix/perm-12-consent-purpose-matrix",
-              "permission-metrix/perm-13-audit-evidence-matrix",
-              "permission-metrix/perm-14-delegation-dual-control-matrix",
-              "permission-metrix/perm-15-permission-decision-use-case-catalog",
-              "permission-metrix/perm-16-build-stop-rules",
-              "permission-metrix/readme"
-            ]
-          }
-        ]
+        "pages": []
       }
     ]
   }
