@@ -1,0 +1,241 @@
+---
+id: PERM-00
+title: Permission Master Registry
+pack: PERMISSION MATRIX PACK
+version: v0.1
+status: Draft for import/review
+source_of_truth: F88 Ecosystem Architecture last.md
+owners: Architecture, Security, Product, BA, DEV, OpsF88
+---
+
+# PERM-00 — Permission Master Registry
+
+> **Source of truth:** `F88 Ecosystem Architecture last.md`  
+> **Nguyên tắc:** File MD gốc là nguồn chuẩn. Tài liệu này là registry/tài liệu vận hành được bóc tách từ master để import, đăng ký và quản trị permission.
+
+## 1. Mục tiêu
+
+Đây là registry gốc để vận hành toàn bộ Permission Matrix Pack. File này khai báo công thức, nguyên tắc, registry tham chiếu và cách liên kết giữa actor/action/object/purpose/control/audit.
+
+## 2. Source reference map
+
+| Nhóm nội dung | Reference trong file MD gốc |
+|---|---|
+| Authority principle | `Domain Authority Registry`, `App surface is not authority`, `Domain owns truth` |
+| Shared trust primitives | `Shared Trust & Foundation`, `Identity`, `Party`, `eKYC`, `Consent`, `Permit`, `Device Trust`, `Document/Evidence`, `Notification`, `Audit` |
+| Trust worlds | `App Worlds & Trust Boundaries`, `Customer World`, `Workforce World`, `Partner World` |
+| Channel/BFF boundary | `Channel Service / BFF Pattern`, `BFF composes experience; domain owns truth` |
+| Control plane | `Control Plane & Governance`, `Build Stop Rules`, `No consent/permit, no action`, `No audit, no accountability` |
+
+## 3. Core permission formula
+
+```text
+Permission Decision =
+Actor
++ Action
++ Object
++ Authority
++ Surface / Channel
++ Purpose
++ Scope
++ Context
++ Case / WorkItem nếu có
++ Consent / Legal Basis
++ Permit
++ State Guard
++ Audit
+```
+
+**Default rule:** nếu thiếu thông tin để chứng minh quyền, kết quả mặc định là `DENY`.
+
+## 4. Core design principles
+
+| ID | Principle | Ý nghĩa vận hành |
+|---|---|---|
+| PERM-PR-01 | Authority first | Mọi object/truth phải có authority trước khi cấp quyền |
+| PERM-PR-02 | Role is not permission | Role chỉ là một input, không phải quyết định cuối cùng |
+| PERM-PR-03 | Purpose-bound access | Mọi truy cập dữ liệu phải có mục đích hợp lệ |
+| PERM-PR-04 | Case-bound workforce access | Workforce chỉ được xem/làm trong phạm vi case/workitem/scope |
+| PERM-PR-05 | Consent-aware access | Dữ liệu khách hàng/partner phải kiểm consent hoặc legal basis |
+| PERM-PR-06 | Permit-based action | Action quan trọng phải được Permit Foundation quyết định |
+| PERM-PR-07 | No BFF shadow domain | BFF không được tự quyết định business truth |
+| PERM-PR-08 | No audit, no accountability | High-risk action bắt buộc audit |
+| PERM-PR-09 | Partner by contract | Partner chỉ truy cập/gửi/nhận dữ liệu theo contract |
+| PERM-PR-10 | Least privilege | Cấp quyền tối thiểu theo actor/action/object/context |
+
+
+## 5. Master registry relationship
+
+```text
+PERM-00 Permission Master Registry
+├── Actor Registry -> PERM-02
+├── Action Taxonomy -> PERM-03
+├── Object Authority Matrix -> PERM-04
+├── Evaluation Model -> PERM-05
+├── Customer/Workforce/Partner/System/Ops Matrices -> PERM-06..10
+├── High-risk/Consent/Audit/Delegation -> PERM-11..14
+├── Use Case Catalog -> PERM-15
+└── Build Stop Rules -> PERM-16
+```
+
+## 6. Actor registry snapshot
+
+| Actor ID | Actor group | Actor name | Primary surface/interface | Authority/source | Notes |
+|---|---|---|---|---|---|
+| ACT-CUS-MYF88 | Customer | MyF88 Customer / Borrower | MyF88 | Identity + Party Foundation | Khách hàng vay / sử dụng money access |
+| ACT-CUS-NNX | Customer | NNX Customer / Policyholder | NNX | Identity + Party Foundation | Khách hàng bảo hiểm |
+| ACT-CUS-FINVEST | Customer | FInvest Customer / Saver / Investor | FInvest | Identity + Party Foundation | Khách hàng tích lũy/đầu tư |
+| ACT-CUS-SB-MEMBER | Customer | Social Banking Member | MyF88/FInvest | Social Banking Domain + Party | Thành viên nhóm tài chính cộng đồng |
+| ACT-WF-SALES | Workforce | Sales / Advisor | OpsF88 | Workforce/HXP + Distribution | Tư vấn bán hàng/hỗ trợ khách |
+| ACT-WF-AGENT | Workforce | Insurance Agent | OpsF88 | Distribution/Agent Network + LMS/HXP | Agent phải có certification/eligibility |
+| ACT-WF-LOANOPS | Workforce | Lending Ops Staff | OpsF88 | OpsF88 + Lending Domain | Xử lý hồ sơ, chứng từ, exception |
+| ACT-WF-UNDERWRITER | Workforce | Underwriter / Credit Reviewer | OpsF88 | Lending Domain delegated authority | Review/phê duyệt theo delegated authority |
+| ACT-WF-CLAIM-SUPPORT | Workforce | Claims Support | OpsF88 | OpsF88 + Claims Domain | Hỗ trợ claim/chứng từ |
+| ACT-WF-CLAIM-ASSESSOR | Workforce | Claims Assessor | OpsF88 | Claims Domain delegated authority | Thẩm định/đề xuất/duyệt claim theo cấp |
+| ACT-WF-SUPERVISOR | Workforce | Supervisor / Queue Owner | OpsF88 | OpsF88 | Gán việc, giám sát queue/SLA |
+| ACT-WF-COMPLIANCE | Workforce | Compliance Officer | OpsF88 | Compliance/Risk | Review, audit, moderation, incident |
+| ACT-WF-MODERATOR | Workforce | Live Moderator | OpsF88 | ExOS/CXP + OpsF88 | Moderation livestream/shoppertainment |
+| ACT-WF-PARTNEROPS | Workforce | Partner Operations Staff | OpsF88 | Partner Exchange + OpsF88 | Xử lý callback/SLA/incident |
+| ACT-PARTNER-MB | Partner | MB Bank | Partner API | MB Bank | Banking truth owner |
+| ACT-PARTNER-CIMB | Partner | CIMB | Partner API | CIMB | Partner funding/banking/product flow nếu áp dụng |
+| ACT-PARTNER-INS | Partner | Insurance Partner / Insurer | Partner API/Portal | Insurance Partner | Policy/claim truth nếu partner-owned |
+| ACT-PARTNER-INVEST | Partner | Securities/Fund/Bond Partner | Partner API | Licensed Partner | Investment account/order/holding truth |
+| ACT-PARTNER-PAYMENT | Partner | Payment/Wallet Partner | Partner API | Payment Partner | Payment execution/status |
+| ACT-SYS-MYF88-BFF | System | MyF88 BFF / Channel Service | BFF | Channel Service owner | Compose/route/projection only |
+| ACT-SYS-NNX-BFF | System | NNX BFF / Channel Service | BFF | Channel Service owner | Compose/route/projection only |
+| ACT-SYS-FINVEST-BFF | System | FInvest BFF / Channel Service | BFF | Channel Service owner | Compose/route/projection only |
+| ACT-SYS-OPSF88-BFF | System | OpsF88 BFF / Channel Service | BFF | OpsF88 Platform | Workforce/ops compose only |
+| ACT-SYS-EXOS | System | ExOS/CXP | ExOS/CXP | ExOS/CXP | Campaign/NBA/NBO/engagement/attribution |
+| ACT-SYS-PERMIT | System | Permit Service | Shared Foundation | Permit Foundation | Quyết định ALLOW/DENY/CONDITIONAL_ALLOW |
+| ACT-SYS-NOTI | System | Notification/CCM Service | Shared Foundation | Notification/CCM | Delivery state/notification controls |
+| ACT-SYS-AUDIT | System | Audit Platform | Shared Foundation | Audit Platform | Ghi audit trail |
+
+
+## 7. Action taxonomy snapshot
+
+| Action Code | Category | Action name | Vietnamese name | Risk level | Notes |
+|---|---|---|---|---|---|
+| ACT.READ | READ | Read/View | Xem/tra cứu | Low-Medium | Tùy object có thể high-risk |
+| ACT.SEARCH | READ | Search/List | Tìm kiếm/liệt kê | Medium | Nguy hiểm với customer data nếu không scope |
+| ACT.CREATE | CREATE | Create/Submit | Tạo/gửi yêu cầu | Medium | Ví dụ submit loan/claim/application |
+| ACT.UPDATE | UPDATE | Update/Edit | Cập nhật/chỉnh sửa | Medium-High | Tùy object/state |
+| ACT.DELETE | DELETE | Delete/Remove | Xóa/gỡ | High | Thường cấm hoặc cần dual control |
+| ACT.DECIDE | DECIDE | Decide/Approve/Reject | Quyết định/duyệt/từ chối | High-Critical | Domain authority/delegated authority required |
+| ACT.EXECUTE | EXECUTE | Execute transaction | Thực thi giao dịch | High-Critical | Payment/order/ledger/posting |
+| ACT.OPERATE | OPERATE | Operate workflow/case | Vận hành case/workitem | Medium-High | OpsF88 scope/case-bound |
+| ACT.ASSIGN | OPERATE | Assign/Reassign | Gán/chuyển việc | Medium | Supervisor/queue owner |
+| ACT.ESCALATE | OPERATE | Escalate | Escalate/chuyển cấp | Medium | Theo SLA/severity |
+| ACT.MODERATE | OPERATE | Moderate content/live | Kiểm duyệt nội dung/live | High | Compliance/audit required |
+| ACT.KILL | OPERATE | Kill/Pause/Suspend | Dừng/tạm dừng/khóa | Critical | Kill authority required |
+| ACT.SHARE | SHARE | Share/Transmit data | Chia sẻ/gửi dữ liệu | High | Consent/contract required |
+| ACT.EXPORT | SHARE | Export data | Xuất dữ liệu | High-Critical | Data governance/audit required |
+| ACT.OVERRIDE | OVERRIDE | Override policy/decision | Ghi đè/chấp thuận ngoại lệ | Critical | Dual control/waiver required |
+| ACT.AUDIT_READ | READ | Read audit | Xem audit | High | Compliance/legal scope required |
+
+
+## 8. Object authority snapshot
+
+| Object / Truth ID | Object / Truth | Authority | Domain group | Notes |
+|---|---|---|---|---|
+| OBJ.IDENTITY | Identity | Identity Foundation | Shared Trust & Foundation | Danh tính actor |
+| OBJ.PARTY | Party / Customer Reference | Party Foundation | Shared Trust & Foundation | Chủ thể khách hàng thống nhất |
+| OBJ.EKYC | eKYC Result / Evidence Package | Identity/eKYC Foundation | Shared Trust & Foundation | Kết quả/bằng chứng định danh |
+| OBJ.CONSENT | Consent | Consent Foundation | Shared Trust & Foundation | Đồng ý theo purpose |
+| OBJ.PERMIT | Permit / Access Decision | Permit Foundation | Shared Trust & Foundation | Quyết định quyền |
+| OBJ.DEVICE_TRUST | Device Trust | Device Trust Foundation | Shared Trust & Foundation | Độ tin cậy thiết bị |
+| OBJ.DOCUMENT | Document / Evidence | Document/Evidence Foundation | Shared Trust & Foundation | Hồ sơ, chứng từ, bằng chứng |
+| OBJ.NOTIFICATION | Notification Delivery | Notification/CCM | Shared Trust & Foundation | Delivery state |
+| OBJ.AUDIT | Audit Trail | Audit Platform | Shared Trust & Foundation | Nhật ký trách nhiệm |
+| OBJ.LOAN_APPLICATION | Loan Application | Lending Domain | Lending | Hồ sơ vay |
+| OBJ.LOAN_APPROVAL | Loan Approval | Lending Domain | Lending | Quyết định phê duyệt |
+| OBJ.LOAN_CONTRACT | Loan Contract | Lending Domain | Lending | Hợp đồng vay |
+| OBJ.REPAYMENT_OBLIGATION | Repayment Obligation | Lending Domain | Lending | Nghĩa vụ trả nợ |
+| OBJ.PAYMENT_EXECUTION | Payment Execution | Payment Domain / Payment Partner | Payment | Thực thi thanh toán |
+| OBJ.INS_PRODUCT | Insurance Product | Insurance Domain | Insurance | Sản phẩm bảo hiểm |
+| OBJ.INS_QUOTE | Insurance Quote | Insurance Domain / NNX Insurance OS | Insurance | Báo phí/báo giá |
+| OBJ.POLICY | Policy | Policy Admin Domain | Insurance | Hợp đồng bảo hiểm |
+| OBJ.CLAIM_INTAKE | Claim Intake | Claims Domain | Claims | Tiếp nhận bồi thường |
+| OBJ.CLAIM_ASSESSMENT | Claim Assessment | Claims Domain | Claims | Thẩm định claim |
+| OBJ.CLAIM_DECISION | Claim Decision | Claims Domain | Claims | Duyệt/từ chối claim |
+| OBJ.CLAIM_PAYOUT | Claim Payout | Claims Domain / Payment Partner | Claims/Payment | Chi trả bồi thường |
+| OBJ.INVEST_ACCOUNT | Investment Account | Licensed Partner / Investment Domain | Investment | Tài khoản đầu tư |
+| OBJ.INVEST_ORDER | Investment Order | Licensed Partner | Investment | Lệnh đầu tư |
+| OBJ.PORTFOLIO | Holding / Portfolio | Licensed Partner / Investment Domain | Investment | Danh mục nắm giữ |
+| OBJ.PORTFOLIO_PROJECTION | Portfolio Projection | Partner/domain projection | Investment | Bản chiếu, không phải app truth |
+| OBJ.MB_ACCOUNT | MB Account | MB Bank | Banking Partner | Tài khoản MB |
+| OBJ.MB_ACCOUNT_STATUS | MB Account Opening Status | MB callback/projection | Banking Partner | Trạng thái do MB trả về |
+| OBJ.GOAL_SAVING | Goal Saving | Goal Savings Domain | Goal Savings | Mục tiêu tiết kiệm |
+| OBJ.GOLD_PIGGY_VIS | Gold Piggy Bank Visualization | Goal Savings + Market Data | Gold/Goal | Mô phỏng vàng |
+| OBJ.REAL_GOLD_OWNERSHIP | Real Gold Ownership | Gold partner if legal model allows | Gold Partner | Sở hữu vàng thật nếu có |
+| OBJ.GOLD_COLLATERAL | Gold Collateral Asset | Gold & Collateral Domain | Gold/Collateral | Tài sản bảo đảm vàng |
+| OBJ.COLLATERAL_VALUATION | Collateral Valuation | Valuation Service / Partner | Gold/Collateral | Định giá |
+| OBJ.COLLATERAL_CUSTODY | Collateral Custody | Gold & Collateral / Custody Authority | Gold/Collateral | Lưu giữ/custody |
+| OBJ.SB_GROUP | Social Banking Group | Social Banking Domain | Social Banking | Nhóm tài chính cộng đồng |
+| OBJ.SB_MEMBER | Social Banking Member | Social Banking Domain | Social Banking | Thành viên nhóm |
+| OBJ.SB_CONTRIBUTION | Contribution Obligation | Social Banking Domain | Social Banking | Nghĩa vụ góp |
+| OBJ.SB_BID_AWARD | Bid / Award Result | Social Banking Domain | Social Banking | Kết quả bid/lượt nhận |
+| OBJ.SB_LEDGER | Group Ledger | Social Banking Domain | Social Banking | Sổ cái nhóm |
+| OBJ.DISPUTE | Dispute | Domain truth + OpsF88 case by nature | Domain + OpsF88 | Tranh chấp |
+| OBJ.AGENT_PROFILE | Agent Profile | Distribution / Agent Network Domain | Distribution | Hồ sơ agent |
+| OBJ.AGENT_CERT | Agent Certification | LMS/HXP | Workforce/HXP | Chứng nhận agent |
+| OBJ.SELLING_ELIGIBILITY | Product Selling Eligibility | Distribution / Agent Network + Permit | Distribution | Điều kiện được bán/tư vấn |
+| OBJ.COMMISSION_SCHEME | Commission Scheme | Incentive OS | Incentive | Chính sách hoa hồng |
+| OBJ.COMMISSION_PAYABLE | Commission Payable | Incentive OS | Incentive | Hoa hồng được trả |
+| OBJ.WORKITEM | WorkItem | OpsF88 | OpsF88 | Đầu việc |
+| OBJ.QUEUE | Queue | OpsF88 | OpsF88 | Hàng đợi |
+| OBJ.CASE | Case | OpsF88 | OpsF88 | Case vận hành |
+| OBJ.SLA | SLA | OpsF88 | OpsF88 | Cam kết xử lý |
+| OBJ.CAMPAIGN | Campaign State | ExOS/CXP | ExOS/CXP | Trạng thái chiến dịch |
+| OBJ.NBA_NBO | NBA / NBO | ExOS/CXP | ExOS/CXP | Gợi ý hành động/offer |
+| OBJ.SHOPPERTAINMENT | Shoppertainment Session | ExOS/CXP Shoppertainment Engine | ExOS/CXP | Phiên live/tương tác |
+| OBJ.VOUCHER | Voucher Redemption | Loyalty / Voucher Domain | Loyalty | Dùng/nhận voucher |
+
+
+## 9. Purpose snapshot
+
+| Purpose Code | Purpose | Vietnamese name | Consent/legal basis required | Notes |
+|---|---|---|---|---|
+| PURP.AUTH | Authentication | Xác thực/đăng nhập | Legal/service basis | Identity/session |
+| PURP.SERVICE | Service delivery | Cung cấp dịch vụ | Contract/service basis | Xem/tracking dịch vụ đang dùng |
+| PURP.LOAN_APPLY | Loan application processing | Xử lý hồ sơ vay | Consent/legal basis | Lending journey |
+| PURP.REPAYMENT | Repayment servicing | Thu nợ/thanh toán | Contract/service basis | Payment/repayment |
+| PURP.INS_QUOTE | Insurance quote/advisory | Báo giá/tư vấn bảo hiểm | Consent if advisor/partner sharing | Insurance journey |
+| PURP.CLAIM_SUPPORT | Claim support | Hỗ trợ bồi thường | Consent/legal basis | Claim evidence/docs |
+| PURP.INVEST_DISCOVERY | Investment discovery | Khám phá đầu tư | Disclosure/consent if tracking | FInvest/partner-led |
+| PURP.INVEST_HANDOFF | Investment partner handoff | Chuyển tiếp đối tác đầu tư | Explicit consent + suitability/disclosure | Partner-led regulated |
+| PURP.BANKING_HANDOFF | Banking partner handoff | Chuyển tiếp ngân hàng | Explicit partner consent | MB/CIMB if applicable |
+| PURP.SOCIAL_BANKING | Social Banking participation | Tham gia tài chính cộng đồng | Participation + group data consent | Group visibility |
+| PURP.MARKETING | Marketing/campaign | Marketing/chiến dịch | Marketing opt-in/consent | Suppression/frequency applies |
+| PURP.LIVE_INTENT | Live intent capture | Ghi nhận intent trong live | Interaction/intent consent | Shoppertainment |
+| PURP.SUPPORT | Customer support | Hỗ trợ khách hàng | Service/legal basis | Case/workitem |
+| PURP.OPS_PROCESSING | Operations processing | Xử lý vận hành | Work purpose + case assignment | Workforce only |
+| PURP.COMPLIANCE_REVIEW | Compliance/risk review | Kiểm soát/tuân thủ | Legal basis + scope | Audit/access limited |
+| PURP.PARTNER_RECON | Partner reconciliation | Đối soát đối tác | Partner contract | Partner Ops |
+| PURP.ANALYTICS | Analytics/segmentation | Phân tích/phân khúc | Consent/legal basis + allowed use | Data governance |
+| PURP.AUDIT | Audit | Kiểm toán/audit | Legal/internal basis | Audit Platform |
+
+
+## 10. Control catalog snapshot
+
+| Control ID | Control | Description | Applies to |
+|---|---|---|---|
+| CTRL.AUTHN | Authentication required | Actor phải xác thực | All non-public actions |
+| CTRL.SESSION | Valid session | Session/token còn hiệu lực | App/BFF/customer/workforce |
+| CTRL.IDENTITY | Identity resolved | Actor identity rõ ràng | All restricted actions |
+| CTRL.PARTY | Party resolved | Object/customer liên kết đúng party | Customer data actions |
+| CTRL.CONSENT | Consent valid | Consent đúng purpose/scope còn hiệu lực | Data sharing/marketing/partner/group |
+| CTRL.LEGAL_BASIS | Legal/service basis valid | Có căn cứ xử lý không cần consent riêng | Service/compliance/contract actions |
+| CTRL.PERMIT | Permit granted | Permit Foundation trả ALLOW/CONDITIONAL_ALLOW | High-risk/restricted actions |
+| CTRL.SCOPE | Scope valid | Branch/region/product/team/customer scope hợp lệ | Workforce/partner/system |
+| CTRL.CASE | Case/workitem assigned | Actor có case/workitem được giao | OpsF88/workforce access |
+| CTRL.PURPOSE | Purpose valid | Purpose của request hợp lệ | All data access |
+| CTRL.STATE | State transition valid | Object đang ở state cho phép action | Domain commands |
+| CTRL.AUTHORITY | Authority confirmed | Authority của object xác định | All write/decide/execute |
+| CTRL.DUAL | Dual control required | 4-eyes/dual approval | Critical actions |
+| CTRL.AUDIT | Audit required | Ghi audit trail | High-risk/all sensitive actions |
+| CTRL.EVIDENCE | Evidence required | Có/chụp/lưu bằng chứng | eKYC, claim, collateral, payment, compliance |
+| CTRL.CONTRACT | Partner/data contract required | Có contract/payload/schema | Partner actions |
+| CTRL.IDEMPOTENCY | Idempotency required | Chống double-submit/callback lặp | Payment/partner/command |
+| CTRL.FRESHNESS | Projection freshness required | Có timestamp/stale rule | Projection/display |
+| CTRL.KILL_SWITCH | Kill switch available | Có quyền tắt/suspend | Partner/live/high-risk |
+

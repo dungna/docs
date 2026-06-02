@@ -1,0 +1,65 @@
+---
+id: PERM-03
+title: Action Taxonomy
+pack: PERMISSION MATRIX PACK
+version: v0.1
+status: Draft for import/review
+source_of_truth: F88 Ecosystem Architecture last.md
+owners: Architecture, Security, Product, BA, DEV, OpsF88
+---
+
+# PERM-03 — Action Taxonomy
+
+> **Source of truth:** `F88 Ecosystem Architecture last.md`  
+> **Nguyên tắc:** File MD gốc là nguồn chuẩn. Tài liệu này là registry/tài liệu vận hành được bóc tách từ master để import, đăng ký và quản trị permission.
+
+## 1. Mục tiêu
+
+Chuẩn hóa action để mọi permission use case không bị viết theo ngôn ngữ tự do. Action taxonomy là input bắt buộc cho Permit Foundation.
+
+## 2. Source reference map
+
+| Nhóm nội dung | Reference trong file MD gốc |
+|---|---|
+| Authority principle | `Domain Authority Registry`, `App surface is not authority`, `Domain owns truth` |
+| Shared trust primitives | `Shared Trust & Foundation`, `Identity`, `Party`, `eKYC`, `Consent`, `Permit`, `Device Trust`, `Document/Evidence`, `Notification`, `Audit` |
+| Trust worlds | `App Worlds & Trust Boundaries`, `Customer World`, `Workforce World`, `Partner World` |
+| Channel/BFF boundary | `Channel Service / BFF Pattern`, `BFF composes experience; domain owns truth` |
+| Control plane | `Control Plane & Governance`, `Build Stop Rules`, `No consent/permit, no action`, `No audit, no accountability` |
+
+
+## 3. Action taxonomy registry
+
+| Action Code | Category | Action name | Vietnamese name | Risk level | Notes |
+|---|---|---|---|---|---|
+| ACT.READ | READ | Read/View | Xem/tra cứu | Low-Medium | Tùy object có thể high-risk |
+| ACT.SEARCH | READ | Search/List | Tìm kiếm/liệt kê | Medium | Nguy hiểm với customer data nếu không scope |
+| ACT.CREATE | CREATE | Create/Submit | Tạo/gửi yêu cầu | Medium | Ví dụ submit loan/claim/application |
+| ACT.UPDATE | UPDATE | Update/Edit | Cập nhật/chỉnh sửa | Medium-High | Tùy object/state |
+| ACT.DELETE | DELETE | Delete/Remove | Xóa/gỡ | High | Thường cấm hoặc cần dual control |
+| ACT.DECIDE | DECIDE | Decide/Approve/Reject | Quyết định/duyệt/từ chối | High-Critical | Domain authority/delegated authority required |
+| ACT.EXECUTE | EXECUTE | Execute transaction | Thực thi giao dịch | High-Critical | Payment/order/ledger/posting |
+| ACT.OPERATE | OPERATE | Operate workflow/case | Vận hành case/workitem | Medium-High | OpsF88 scope/case-bound |
+| ACT.ASSIGN | OPERATE | Assign/Reassign | Gán/chuyển việc | Medium | Supervisor/queue owner |
+| ACT.ESCALATE | OPERATE | Escalate | Escalate/chuyển cấp | Medium | Theo SLA/severity |
+| ACT.MODERATE | OPERATE | Moderate content/live | Kiểm duyệt nội dung/live | High | Compliance/audit required |
+| ACT.KILL | OPERATE | Kill/Pause/Suspend | Dừng/tạm dừng/khóa | Critical | Kill authority required |
+| ACT.SHARE | SHARE | Share/Transmit data | Chia sẻ/gửi dữ liệu | High | Consent/contract required |
+| ACT.EXPORT | SHARE | Export data | Xuất dữ liệu | High-Critical | Data governance/audit required |
+| ACT.OVERRIDE | OVERRIDE | Override policy/decision | Ghi đè/chấp thuận ngoại lệ | Critical | Dual control/waiver required |
+| ACT.AUDIT_READ | READ | Read audit | Xem audit | High | Compliance/legal scope required |
+
+
+## 4. Action category rules
+
+| Category | Rule |
+|---|---|
+| READ | Luôn cần purpose; customer read self khác workforce read assigned case |
+| CREATE | Cần identity/session; với domain object cần authority/state guard |
+| UPDATE | Cần authority hoặc delegated authority; phải audit nếu sensitive |
+| DELETE | Mặc định deny, chỉ cho phép nếu có explicit policy |
+| DECIDE | Chỉ domain/delegated authority được làm |
+| EXECUTE | Cần idempotency, audit, reconciliation nếu money/ledger |
+| OPERATE | OpsF88 scope/case/queue-bound |
+| SHARE/EXPORT | Cần consent/contract/legal basis + audit |
+| OVERRIDE | Critical, cần dual control/waiver |

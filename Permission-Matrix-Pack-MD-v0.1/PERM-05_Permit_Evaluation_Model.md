@@ -1,0 +1,91 @@
+---
+id: PERM-05
+title: Permit Evaluation Model
+pack: PERMISSION MATRIX PACK
+version: v0.1
+status: Draft for import/review
+source_of_truth: F88 Ecosystem Architecture last.md
+owners: Architecture, Security, Product, BA, DEV, OpsF88
+---
+
+# PERM-05 — Permit Evaluation Model
+
+> **Source of truth:** `F88 Ecosystem Architecture last.md`  
+> **Nguyên tắc:** File MD gốc là nguồn chuẩn. Tài liệu này là registry/tài liệu vận hành được bóc tách từ master để import, đăng ký và quản trị permission.
+
+## 1. Mục tiêu
+
+Mô tả cách Permit Foundation ra quyết định ALLOW/DENY/CONDITIONAL_ALLOW dựa trên actor, action, object, authority, purpose, context, consent, state và audit.
+
+## 2. Source reference map
+
+| Nhóm nội dung | Reference trong file MD gốc |
+|---|---|
+| Authority principle | `Domain Authority Registry`, `App surface is not authority`, `Domain owns truth` |
+| Shared trust primitives | `Shared Trust & Foundation`, `Identity`, `Party`, `eKYC`, `Consent`, `Permit`, `Device Trust`, `Document/Evidence`, `Notification`, `Audit` |
+| Trust worlds | `App Worlds & Trust Boundaries`, `Customer World`, `Workforce World`, `Partner World` |
+| Channel/BFF boundary | `Channel Service / BFF Pattern`, `BFF composes experience; domain owns truth` |
+| Control plane | `Control Plane & Governance`, `Build Stop Rules`, `No consent/permit, no action`, `No audit, no accountability` |
+
+
+## 3. Evaluation sequence
+
+| Step | Check | If fail |
+|---:|---|---|
+| 1 | Resolve actor | DENY |
+| 2 | Validate authentication/session | DENY |
+| 3 | Resolve object | DENY |
+| 4 | Resolve object authority | DENY |
+| 5 | Resolve action taxonomy | DENY |
+| 6 | Check actor group allowed for action/object | DENY |
+| 7 | Check purpose/legal basis | DENY |
+| 8 | Check consent if required | DENY |
+| 9 | Check scope/case/workitem | DENY |
+| 10 | Check state machine/domain guard | DENY |
+| 11 | Check partner/foundation contract if needed | DENY |
+| 12 | Check dual control/approval if needed | CONDITIONAL_ALLOW or ESCALATE |
+| 13 | Attach obligations | CONDITIONAL_ALLOW |
+| 14 | Create audit trail | DENY if high-risk and audit unavailable |
+
+## 4. Permit decision output schema
+
+```json
+{
+  "decision": "ALLOW | DENY | CONDITIONAL_ALLOW | ESCALATE",
+  "actor_id": "...",
+  "action_code": "ACT.READ",
+  "object_id": "OBJ.LOAN_CONTRACT",
+  "object_ref": "...",
+  "purpose_code": "PURP.SERVICE",
+  "authority": "Lending Domain",
+  "conditions": ["CTRL.AUTHN", "CTRL.PERMIT", "CTRL.AUDIT"],
+  "obligations": ["MASK_FIELDS", "CREATE_AUDIT"],
+  "reason_code": "PERMIT.ALLOWED.SELF_OWNER",
+  "correlation_id": "..."
+}
+```
+
+## 5. Control catalog
+
+| Control ID | Control | Description | Applies to |
+|---|---|---|---|
+| CTRL.AUTHN | Authentication required | Actor phải xác thực | All non-public actions |
+| CTRL.SESSION | Valid session | Session/token còn hiệu lực | App/BFF/customer/workforce |
+| CTRL.IDENTITY | Identity resolved | Actor identity rõ ràng | All restricted actions |
+| CTRL.PARTY | Party resolved | Object/customer liên kết đúng party | Customer data actions |
+| CTRL.CONSENT | Consent valid | Consent đúng purpose/scope còn hiệu lực | Data sharing/marketing/partner/group |
+| CTRL.LEGAL_BASIS | Legal/service basis valid | Có căn cứ xử lý không cần consent riêng | Service/compliance/contract actions |
+| CTRL.PERMIT | Permit granted | Permit Foundation trả ALLOW/CONDITIONAL_ALLOW | High-risk/restricted actions |
+| CTRL.SCOPE | Scope valid | Branch/region/product/team/customer scope hợp lệ | Workforce/partner/system |
+| CTRL.CASE | Case/workitem assigned | Actor có case/workitem được giao | OpsF88/workforce access |
+| CTRL.PURPOSE | Purpose valid | Purpose của request hợp lệ | All data access |
+| CTRL.STATE | State transition valid | Object đang ở state cho phép action | Domain commands |
+| CTRL.AUTHORITY | Authority confirmed | Authority của object xác định | All write/decide/execute |
+| CTRL.DUAL | Dual control required | 4-eyes/dual approval | Critical actions |
+| CTRL.AUDIT | Audit required | Ghi audit trail | High-risk/all sensitive actions |
+| CTRL.EVIDENCE | Evidence required | Có/chụp/lưu bằng chứng | eKYC, claim, collateral, payment, compliance |
+| CTRL.CONTRACT | Partner/data contract required | Có contract/payload/schema | Partner actions |
+| CTRL.IDEMPOTENCY | Idempotency required | Chống double-submit/callback lặp | Payment/partner/command |
+| CTRL.FRESHNESS | Projection freshness required | Có timestamp/stale rule | Projection/display |
+| CTRL.KILL_SWITCH | Kill switch available | Có quyền tắt/suspend | Partner/live/high-risk |
+
