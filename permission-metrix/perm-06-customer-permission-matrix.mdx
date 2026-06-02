@@ -1,0 +1,59 @@
+---
+title: "Customer Permission Matrix"
+id: "PERM-06"
+pack: "PERMISSION MATRIX PACK"
+version: "v0.1"
+status: "Draft for import/review"
+source_of_truth: "F88 Ecosystem Architecture last.md"
+owners: "Architecture, Security, Product, BA, DEV, OpsF88"
+---
+
+# PERM-06 — Customer Permission Matrix
+
+> **Source of truth:** `F88 Ecosystem Architecture last.md`\
+> **Nguyên tắc:** File MD gốc là nguồn chuẩn. Tài liệu này là registry/tài liệu vận hành được bóc tách từ master để import, đăng ký và quản trị permission.
+
+## 1. Mục tiêu
+
+Đăng ký các quyền của customer trên MyF88, NNX, FInvest và các journey embedded/handoff. Customer được thao tác trên dữ liệu của chính mình nhưng không được quyết định business truth.
+
+## 2. Source reference map
+
+| Nhóm nội dung | Reference trong file MD gốc |
+| --- | --- |
+| Authority principle | `Domain Authority Registry`, `App surface is not authority`, `Domain owns truth` |
+| Shared trust primitives | `Shared Trust & Foundation`, `Identity`, `Party`, `eKYC`, `Consent`, `Permit`, `Device Trust`, `Document/Evidence`, `Notification`, `Audit` |
+| Trust worlds | `App Worlds & Trust Boundaries`, `Customer World`, `Workforce World`, `Partner World` |
+| Channel/BFF boundary | `Channel Service / BFF Pattern`, `BFF composes experience; domain owns truth` |
+| Control plane | `Control Plane & Governance`, `Build Stop Rules`, `No consent/permit, no action`, `No audit, no accountability` |
+
+## 3. Customer permission matrix
+
+| Use Case ID | Actor | Surface | Object | Action | Purpose | Required controls | Decision |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| UC-CUS-001 | Customer | MyF88/NNX/FInvest | OBJ.IDENTITY | ACT.READ | PURP.AUTH | CTRL.AUTHN, CTRL.SESSION | ALLOW self |
+| UC-CUS-002 | Customer | MyF88 | OBJ.LOAN\_APPLICATION | ACT.CREATE | PURP.LOAN\_APPLY | CTRL.AUTHN, CTRL.IDENTITY, CTRL.CONSENT, CTRL.PERMIT, CTRL.AUDIT | ALLOW self |
+| UC-CUS-003 | Customer | MyF88 | OBJ.LOAN\_CONTRACT | ACT.READ | PURP.SERVICE | CTRL.AUTHN, CTRL.PARTY, CTRL.PERMIT, CTRL.FRESHNESS | ALLOW self |
+| UC-CUS-004 | Customer | MyF88 | OBJ.LOAN\_APPROVAL | ACT.DECIDE | PURP.LOAN\_APPLY | N/A | DENY |
+| UC-CUS-005 | Customer | MyF88 | OBJ.REPAYMENT\_OBLIGATION | ACT.READ | PURP.REPAYMENT | CTRL.AUTHN, CTRL.PARTY, CTRL.FRESHNESS | ALLOW self |
+| UC-CUS-006 | Customer | MyF88 | OBJ.PAYMENT\_EXECUTION | ACT.EXECUTE | PURP.REPAYMENT | CTRL.AUTHN, CTRL.PERMIT, CTRL.IDEMPOTENCY, CTRL.AUDIT | CONDITIONAL\_ALLOW via payment contract |
+| UC-CUS-007 | Customer | NNX | OBJ.POLICY | ACT.READ | PURP.SERVICE | CTRL.AUTHN, CTRL.PARTY, CTRL.FRESHNESS | ALLOW self |
+| UC-CUS-008 | Customer | NNX | OBJ.CLAIM\_INTAKE | ACT.CREATE | PURP.CLAIM\_SUPPORT | CTRL.AUTHN, CTRL.CONSENT, CTRL.EVIDENCE, CTRL.AUDIT | ALLOW self |
+| UC-CUS-009 | Customer | NNX | OBJ.CLAIM\_DECISION | ACT.DECIDE | PURP.CLAIM\_SUPPORT | N/A | DENY |
+| UC-CUS-010 | Customer | FInvest | OBJ.PORTFOLIO\_PROJECTION | ACT.READ | PURP.INVEST\_DISCOVERY | CTRL.AUTHN, CTRL.CONSENT, CTRL.FRESHNESS | ALLOW if consent/source valid |
+| UC-CUS-011 | Customer | FInvest | OBJ.INVEST\_ORDER | ACT.EXECUTE | PURP.INVEST\_HANDOFF | CTRL.CONTRACT, CTRL.CONSENT | DENY in F88 app / handoff to partner |
+| UC-CUS-012 | Customer | MyF88/FInvest | OBJ.SB\_GROUP | ACT.READ | PURP.SOCIAL\_BANKING | CTRL.AUTHN, CTRL.CONSENT, membership/scope | ALLOW member |
+| UC-CUS-013 | Customer | MyF88/FInvest | OBJ.SB\_LEDGER | ACT.UPDATE | PURP.SOCIAL\_BANKING | N/A | DENY |
+| UC-CUS-014 | Customer | MyF88 | OBJ.MB\_ACCOUNT\_STATUS | ACT.READ | PURP.BANKING\_HANDOFF | CTRL.CONSENT, CTRL.CONTRACT, CTRL.FRESHNESS | ALLOW projection only |
+| UC-CUS-015 | Customer | MyF88 | OBJ.MB\_ACCOUNT | ACT.CREATE | PURP.BANKING\_HANDOFF | CTRL.CONSENT, CTRL.CONTRACT, CTRL.EKYC if available | DENY in F88 / handoff to MB |
+| UC-CUS-016 | Customer | App surfaces | OBJ.CAMPAIGN | ACT.READ | PURP.MARKETING | CTRL.CONSENT/suppression if marketing | ALLOW if eligible |
+| UC-CUS-017 | Customer | App surfaces | OBJ.SHOPPERTAINMENT | ACT.READ | PURP.LIVE\_INTENT | Consent if intent capture | ALLOW join/view |
+| UC-CUS-018 | Customer | App surfaces | OBJ.SHOPPERTAINMENT | ACT.CREATE | PURP.LIVE\_INTENT | CTRL.CONSENT, CTRL.AUDIT | ALLOW intent capture if consent |
+
+## 4. Customer forbidden actions
+
+- Xem dữ liệu khách hàng khác nếu không có consent/group visibility rule.
+- Tự approve loan, claim, policy, investment order hoặc ledger adjustment.
+- Tự xác nhận partner status nếu partner chưa callback.
+- Bypass eKYC/consent/permit.
+- Xem internal risk flags, staff notes, partner internal notes.
